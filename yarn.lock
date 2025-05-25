@@ -133,10 +133,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-bitmask-core@^0.7.0-rc.24:
-  version "0.7.0-rc.24"
-  resolved "https://registry.yarnpkg.com/bitmask-core/-/bitmask-core-0.7.0-rc.24.tgz#6efcad543654ce207cc07850d6c966f41ec63d4e"
-  integrity sha512-a+O3nTBcFahTQVNlrWJDS0Pf6G/tPclIM7njNGa9RuvQ6B5OHw7I14770smbpWrYzgeqxL3y3uKe4Rj2fZwB9A==
+bitmask-core@^0.7.5-beta.2:
+  version "0.11.0-beta.11"
+  resolved "https://registry.yarnpkg.com/bitmask-core/-/bitmask-core-0.11.0-beta.11.tgz#e880443ff9c1fbf8cf87f751c6fff7a38b5ae2bd"
+  integrity sha512-0V8noPRTLUWm/YzfU8HnjsBVTFuFEVdU+IAZJUumseihxGJ+v3PWLJYah799P4UNmNAi7srNHzcmbm02UnhpwA==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
