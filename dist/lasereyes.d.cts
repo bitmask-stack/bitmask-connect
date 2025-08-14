@@ -5,8 +5,8 @@ type BitmaskState = {
     network?: string;
 };
 type BitmaskWalletAdapter = {
-    id: 'BITMASK';
-    name: 'Bitmask';
+    id: "BITMASK";
+    name: "Bitmask";
     icon: string;
     connect: () => Promise<BitmaskState>;
     disconnect: () => Promise<void>;
@@ -24,7 +24,7 @@ type CreateBitmaskWalletOptions = {
 declare function createBitmaskWallet(options?: CreateBitmaskWalletOptions): BitmaskWalletAdapter;
 declare const BITMASK: BitmaskWalletAdapter;
 type BitmaskButton = {
-    id: 'BITMASK';
+    id: "BITMASK";
     label: string;
     icon: string;
     onClick: () => Promise<void>;

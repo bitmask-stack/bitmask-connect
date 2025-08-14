@@ -251,7 +251,9 @@ function createBitmaskWallet(options = {}) {
     const pubkeyHash = pub?.pubkeyHash;
     const network = pub?.network;
     if (!pubkeyHash || pubkeyHash === "0" || pubkeyHash === "-1") {
-      throw new Error("Bitmask: user not authenticated or wallet not available");
+      throw new Error(
+        "Bitmask: user not authenticated or wallet not available"
+      );
     }
     let addr = null;
     try {
