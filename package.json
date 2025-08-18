@@ -1,27 +1,37 @@
 {
   "name": "bitmask-connect",
-  "version": "0.0.5",
-  "main": "dist/index.js",
+  "version": "0.1.0",
+  "description": "Bitmask web SDK to connect dApps with the Bitmask browser extension via content-script messaging.",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "author": "Jose Robles",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./lasereyes": {
+      "import": "./dist/lasereyes.js",
+      "require": "./dist/lasereyes.cjs",
+      "types": "./dist/lasereyes.d.ts"
+    }
+  },
+  "repository": "https://github.com/bitmask-stack/bitmask-connect.git",
+  "author": "Jose Robles <jd.robles@gmail.com>",
   "license": "MIT",
+  "private": null,
   "dependencies": {
-    "bitmask-core": "^0.7.5-beta.2",
-    "typescript": "^5.4.5"
+    "bitmask-core": "../bitmask-next/lib/web"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
-    "eslint": "^9.2.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "prettier": "^3.2.5"
+    "tsup": "^8.0.1",
+    "typescript": "^5.5.0"
   },
   "scripts": {
-    "compile": "tsc",
-    "publish": "yarn compile && cd dist && npm publish && cd ..",
-    "lint": "yarn prettier --check . && yarn eslint src",
-    "fix": "yarn prettier --write . && yarn eslint src --fix",
-    "verify": "tsc --noEmit",
-    "clean": "rm -rf dist/"
+    "build": "tsup src/index.ts src/lasereyes.ts --dts --format cjs,esm --clean",
+    "dev": "tsup src/index.ts src/lasereyes.ts --dts --format cjs,esm --watch",
+    "typecheck": "tsc --noEmit"
   }
 }
