@@ -114,7 +114,8 @@ var BitmaskConnect = class {
   async detect(timeoutMs = 800) {
     try {
       const res = await this.getPubKeyHash({ timeoutMs });
-      return Boolean(res.pubkeyHash);
+      const ph = res?.pubkeyHash;
+      return Boolean(ph && ph !== "0" && ph !== "-1");
     } catch {
       return false;
     }
@@ -241,15 +242,34 @@ function createBitmaskWallet(options = {}) {
     pubkeyHash: null,
     network: void 0
   };
+  let requirePromptOnNextConnect = false;
   bm.on("refresh", () => {
     options.onRefresh?.();
   });
   async function connect() {
     const ok = await bm.detect(1e3);
     if (!ok) throw new Error("Bitmask extension not detected");
-    const pub = await bm.getPubKeyHash({ timeoutMs: 1500 });
-    const pubkeyHash = pub?.pubkeyHash;
+    let pub;
+    if (requirePromptOnNextConnect) {
+      try {
+        await bm.getVault();
+      } catch {
+      }
+      requirePromptOnNextConnect = false;
+      pub = await bm.getPubKeyHash({ timeoutMs: 2e3 });
+    } else {
+      pub = await bm.getPubKeyHash({ timeoutMs: 1500 });
+    }
+    let pubkeyHash = pub?.pubkeyHash;
     const network = pub?.network;
+    if (!pubkeyHash || pubkeyHash === "0" || pubkeyHash === "-1") {
+      try {
+        await bm.getVault();
+      } catch {
+      }
+      pub = await bm.getPubKeyHash({ timeoutMs: 2e3 });
+      pubkeyHash = pub?.pubkeyHash;
+    }
     if (!pubkeyHash || pubkeyHash === "0" || pubkeyHash === "-1") {
       throw new Error(
         "Bitmask: user not authenticated or wallet not available"
@@ -280,6 +300,7 @@ function createBitmaskWallet(options = {}) {
       network: void 0
     };
     options.onDisconnect?.();
+    requirePromptOnNextConnect = true;
   }
   return {
     id: "BITMASK",

@@ -234,7 +234,8 @@ export class BitmaskConnect {
   async detect(timeoutMs = 800): Promise<boolean> {
     try {
       const res = await this.getPubKeyHash({ timeoutMs });
-      return Boolean((res as any).pubkeyHash);
+      const ph = (res as any)?.pubkeyHash;
+      return Boolean(ph && ph !== "0" && ph !== "-1");
     } catch {
       return false;
     }

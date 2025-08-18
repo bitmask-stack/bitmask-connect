@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bitmask Connect – LaserEyes (No React)</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        margin: 24px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 720px;
+      }
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 16px;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+      }
+      button {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #f9fafb;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        border-radius: 8px;
+      }
+      .wallet {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #e5e7eb;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      img {
+        width: 20px;
+        height: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bitmask Connect – LaserEyes (No React)</h1>
+    <p>
+      Simulated LaserEyes wallet selection UI using the adapter API. No React
+      required.
+    </p>
+
+    <div class="card">
+      <h2>Wallets</h2>
+      <div id="wallets"></div>
+      <div class="controls" style="margin-top: 12px">
+        <button id="toggleBtn">Connect</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h2>State</h2>
+      <pre id="state" class="mono">{}</pre>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h2>Calls (via adapter + core)</h2>
+      <div class="controls" style="margin-top: 12px">
+        <button id="detectBtn">Detect</button>
+        <button id="pubBtn">getPubKeyHash</button>
+        <button id="addrBtn">getAddress</button>
+        <button id="fundedBtn">isFunded</button>
+        <button id="assetsBtn">getAssets</button>
+        <button id="vaultBtn">getVault</button>
+        <button id="usernameBtn">getUsername</button>
+      </div>
+      <pre id="out" class="mono"></pre>
+    </div>
+
+    <script type="module">
+      import {
+        BITMASK,
+        createBitmaskWallet,
+        getBitmaskButton,
+      } from "../dist/lasereyes.js";
+
+      const wallet = createBitmaskWallet({
+        onConnect: (s) => renderState(s),
+        onDisconnect: () => renderState(wallet.getState()),
+        onRefresh: () => console.log("refresh broadcast received"),
+      });
+
+      const walletsEl = document.getElementById("wallets");
+      const stateEl = document.getElementById("state");
+      const outEl = document.getElementById("out");
+
+      function renderWallet(w) {
+        const wrap = document.createElement("div");
+        wrap.className = "wallet";
+        const img = document.createElement("img");
+        img.src = w.icon;
+        const span = document.createElement("span");
+        span.textContent = w.name;
+        wrap.appendChild(img);
+        wrap.appendChild(span);
+        return wrap;
+      }
+
+      function renderState(s) {
+        stateEl.textContent = JSON.stringify(s, null, 2);
+      }
+
+      walletsEl.appendChild(renderWallet(wallet));
+      renderState(wallet.getState());
+
+      const toggleBtn = document.getElementById("toggleBtn");
+      async function refreshToggle() {
+        toggleBtn.textContent = wallet.connected() ? "Disconnect" : "Connect";
+      }
+      toggleBtn.onclick = async () => {
+        if (!wallet.connected()) {
+          try {
+            const s = await wallet.connect();
+            renderState(s);
+          } catch (e) {
+            alert(e.message || String(e));
+          }
+        } else {
+          await wallet.disconnect();
+          renderState(wallet.getState());
+        }
+        refreshToggle();
+      };
+      refreshToggle();
+
+      function log(title, data) {
+        outEl.textContent = `${title}:\n` + JSON.stringify(data, null, 2);
+      }
+
+      document.getElementById("detectBtn").onclick = async () => {
+        const bmState = await wallet.connect().catch(() => wallet.getState());
+        log("detect/connect", bmState);
+      };
+
+      document.getElementById("pubBtn").onclick = async () => {
+        try {
+          const bm = (await import("../dist/index.js")).BitmaskConnect
+            ? new (await import("../dist/index.js")).BitmaskConnect()
+            : null;
+          const res = bm
+            ? await bm.getPubKeyHash()
+            : { error: "core not available" };
+          log("getPubKeyHash", res);
+        } catch (e) {
+          log("getPubKeyHash", { error: String(e) });
+        }
+      };
+
+      document.getElementById("addrBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const pub = await bm.getPubKeyHash();
+          const res = await bm.getAddress({ pubkeyHash: pub.pubkeyHash || "" });
+          log("getAddress", res);
+        } catch (e) {
+          log("getAddress", { error: String(e) });
+        }
+      };
+
+      document.getElementById("fundedBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const pub = await bm.getPubKeyHash();
+          const res = await bm.isFunded({ pubkeyHash: pub.pubkeyHash || "" });
+          log("isFunded", res);
+        } catch (e) {
+          log("isFunded", { error: String(e) });
+        }
+      };
+
+      document.getElementById("assetsBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const res = await bm.getAssets();
+          log("getAssets", res);
+        } catch (e) {
+          log("getAssets", { error: String(e) });
+        }
+      };
+
+      document.getElementById("vaultBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const res = await bm.getVault();
+          log("getVault", res);
+        } catch (e) {
+          log("getVault", { error: String(e) });
+        }
+      };
+
+      document.getElementById("usernameBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const pub = await bm.getPubKeyHash();
+          const res = await bm.getUsername({
+            pubkeyHash: pub.pubkeyHash || "",
+          });
+          log("getUsername", res);
+        } catch (e) {
+          log("getUsername", { error: String(e) });
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bitmask Connect – Vanilla Examples</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        margin: 24px;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        max-width: 720px;
+      }
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 16px;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+      }
+      button {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #f9fafb;
+      }
+      textarea,
+      input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        border-radius: 8px;
+      }
+      .label {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 6px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bitmask Connect – Vanilla</h1>
+    <p>Test the SDK directly (no LaserEyes).</p>
+
+    <div class="row">
+      <div class="card" style="flex: 1 1 380px">
+        <h2>Status</h2>
+        <div id="status" class="mono">{}</div>
+        <div class="controls" style="margin-top: 12px">
+          <button id="detectBtn">Detect</button>
+          <button id="getPubBtn">Get PubKeyHash</button>
+          <button id="getAddrBtn">Get Address</button>
+          <button id="getUsernameBtn">Get Username</button>
+          <button id="fundedBtn">Is Funded</button>
+          <button id="assetsBtn">Get Assets</button>
+          <button id="vaultBtn">Get Vault</button>
+        </div>
+      </div>
+
+      <div class="card" style="flex: 1 1 380px">
+        <h2>Notification</h2>
+        <div class="label">Title</div>
+        <input id="notifTitle" placeholder="Hello" />
+        <div class="label">Message</div>
+        <input id="notifMsg" placeholder="Welcome" />
+        <div class="controls" style="margin-top: 12px">
+          <button id="notifyBtn">Send Notification</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h2>Advanced calls</h2>
+      <div class="grid">
+        <div>
+          <div class="label">pubkeyHash (optional for some calls)</div>
+          <input
+            id="pubkeyHashInput"
+            placeholder="will auto-fill after Get PubKeyHash"
+          />
+          <div class="label">UDA JSON</div>
+          <textarea
+            id="udaJson"
+            rows="6"
+            placeholder='{"name":"My Asset"}'
+          ></textarea>
+          <div class="label">UDA Array JSON</div>
+          <textarea
+            id="udaArrayJson"
+            rows="6"
+            placeholder='[{"name":"A"},{"name":"B"}]'
+          ></textarea>
+          <div class="label">Offer Data JSON</div>
+          <textarea
+            id="offerJson"
+            rows="6"
+            placeholder='{"price": 1}'
+          ></textarea>
+        </div>
+        <div>
+          <div class="label">Offer Cancel Data JSON</div>
+          <textarea
+            id="offerCancelJson"
+            rows="6"
+            placeholder='{"offerId":"..."}'
+          ></textarea>
+          <div class="label">Bid Data JSON</div>
+          <textarea id="bidJson" rows="6" placeholder='{"bid":1}'></textarea>
+          <div class="label">Contract JSON</div>
+          <textarea
+            id="contractJson"
+            rows="6"
+            placeholder='{"terms":"..."}'
+          ></textarea>
+          <div class="label">UDA Data for pass/transfer JSON</div>
+          <textarea
+            id="udaDataJson"
+            rows="6"
+            placeholder='{"name":"My Asset"}'
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top: 12px">
+        <button id="issueBtn">issueUDA</button>
+        <button id="bulkIssueBtn">bulkIssueUDA</button>
+        <button id="invoiceBtn">getInvoice</button>
+        <button id="swapOfferBtn">swapOffer</button>
+        <button id="cancelSwapOfferBtn">cancelSwapOffer</button>
+        <button id="swapBidBtn">swapBid</button>
+        <button id="cancelSwapBidBtn">cancelSwapBid</button>
+        <button id="passAssetBtn">passAsset</button>
+        <button id="transferBtn">transfer</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h2>Output</h2>
+      <pre id="out" class="mono"></pre>
+    </div>
+
+    <script type="module">
+      import { BitmaskConnect } from "../dist/index.js";
+
+      const bm = new BitmaskConnect();
+      const out = document.getElementById("out");
+      const statusEl = document.getElementById("status");
+      const pubInput = document.getElementById("pubkeyHashInput");
+
+      function log(title, data) {
+        out.textContent = `${title}:\n` + JSON.stringify(data, null, 2);
+      }
+
+      function setStatus(s) {
+        statusEl.textContent = JSON.stringify(s, null, 2);
+      }
+
+      async function ensurePubkey() {
+        let v = pubInput.value.trim();
+        if (!v) {
+          const pub = await bm.getPubKeyHash();
+          v = pub && pub.pubkeyHash ? pub.pubkeyHash : "";
+          pubInput.value = v;
+        }
+        return v;
+      }
+
+      document.getElementById("detectBtn").onclick = async () => {
+        const ok = await bm.detect();
+        setStatus({ detected: ok });
+      };
+
+      document.getElementById("getPubBtn").onclick = async () => {
+        const res = await bm.getPubKeyHash();
+        if (
+          res &&
+          res.pubkeyHash &&
+          res.pubkeyHash !== "0" &&
+          res.pubkeyHash !== "-1"
+        ) {
+          pubInput.value = res.pubkeyHash;
+        }
+        setStatus(res);
+        log("getPubKeyHash", res);
+      };
+
+      document.getElementById("getAddrBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const res = await bm.getAddress({ pubkeyHash });
+        setStatus({ pubkeyHash, ...res });
+        log("getAddress", res);
+      };
+
+      document.getElementById("getUsernameBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const res = await bm.getUsername({ pubkeyHash });
+        setStatus({ pubkeyHash, ...res });
+        log("getUsername", res);
+      };
+
+      document.getElementById("fundedBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const res = await bm.isFunded({ pubkeyHash });
+        setStatus({ pubkeyHash, ...res });
+        log("isFunded", res);
+      };
+
+      document.getElementById("assetsBtn").onclick = async () => {
+        const res = await bm.getAssets();
+        log("getAssets", res);
+      };
+
+      document.getElementById("vaultBtn").onclick = async () => {
+        const res = await bm.getVault();
+        log("getVault", res);
+      };
+
+      document.getElementById("notifyBtn").onclick = async () => {
+        const title = document.getElementById("notifTitle").value;
+        const message = document.getElementById("notifMsg").value;
+        await bm.sendNotification({ title, message });
+        log("sendNotification", { ok: true });
+      };
+
+      function getJson(id) {
+        const v = document.getElementById(id).value.trim();
+        return v ? JSON.parse(v) : undefined;
+      }
+
+      document.getElementById("issueBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const uda = getJson("udaJson");
+        const res = await bm.issueUDA({ pubkeyHash, uda });
+        log("issueUDA", res);
+      };
+
+      document.getElementById("bulkIssueBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const uda = getJson("udaArrayJson");
+        const res = await bm.bulkIssueUDA({ pubkeyHash, uda });
+        log("bulkIssueUDA", res);
+      };
+
+      document.getElementById("invoiceBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const uda = getJson("udaJson");
+        const res = await bm.getInvoice({ pubkeyHash, uda });
+        log("getInvoice", res);
+      };
+
+      document.getElementById("swapOfferBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const offerData = getJson("offerJson");
+        const res = await bm.swapOffer({ pubkeyHash, offerData });
+        log("swapOffer", res);
+      };
+
+      document.getElementById("cancelSwapOfferBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const offerCancelData = getJson("offerCancelJson");
+        const res = await bm.cancelSwapOffer({ pubkeyHash, offerCancelData });
+        log("cancelSwapOffer", res);
+      };
+
+      document.getElementById("swapBidBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const bidData = getJson("bidJson");
+        const contract = getJson("contractJson");
+        const res = await bm.swapBid({ pubkeyHash, bidData, contract });
+        log("swapBid", res);
+      };
+
+      document.getElementById("cancelSwapBidBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const bidData = getJson("bidJson");
+        const res = await bm.cancelSwapBid({ pubkeyHash, bidData });
+        log("cancelSwapBid", res);
+      };
+
+      document.getElementById("passAssetBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const udaData = getJson("udaDataJson");
+        const res = await bm.passAsset({ pubkeyHash, udaData });
+        log("passAsset", res);
+      };
+
+      document.getElementById("transferBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const udaData = getJson("udaDataJson");
+        const res = await bm.transfer({ pubkeyHash, udaData });
+        log("transfer", res);
+      };
+    </script>
+  </body>
+</html>

@@ -56,6 +56,9 @@ export function createBitmaskWallet(
     network: undefined,
   };
 
+  // If user explicitly disconnects, next connect should prompt authorization
+  let requirePromptOnNextConnect = false;
+
   bm.on("refresh", () => {
     options.onRefresh?.();
   });
@@ -64,9 +67,28 @@ export function createBitmaskWallet(
     const ok = await bm.detect(1000);
     if (!ok) throw new Error("Bitmask extension not detected");
 
-    const pub = await bm.getPubKeyHash({ timeoutMs: 1500 });
-    const pubkeyHash = (pub as any)?.pubkeyHash as string | undefined;
+    // First try without prompting, unless flagged to prompt
+    let pub;
+    if (requirePromptOnNextConnect) {
+      try {
+        await bm.getVault();
+      } catch {}
+      requirePromptOnNextConnect = false;
+      pub = await bm.getPubKeyHash({ timeoutMs: 2000 });
+    } else {
+      pub = await bm.getPubKeyHash({ timeoutMs: 1500 });
+    }
+    let pubkeyHash = (pub as any)?.pubkeyHash as string | undefined;
     const network = (pub as any)?.network as string | undefined;
+
+    // If not authorized, prompt once and retry
+    if (!pubkeyHash || pubkeyHash === "0" || pubkeyHash === "-1") {
+      try {
+        await bm.getVault();
+      } catch {}
+      pub = await bm.getPubKeyHash({ timeoutMs: 2000 });
+      pubkeyHash = (pub as any)?.pubkeyHash as string | undefined;
+    }
 
     if (!pubkeyHash || pubkeyHash === "0" || pubkeyHash === "-1") {
       throw new Error(
@@ -80,9 +102,7 @@ export function createBitmaskWallet(
       if ((a as any).isLogged === true) {
         addr = (a as any).address ?? null;
       }
-    } catch {
-      // keep addr null
-    }
+    } catch {}
 
     state = {
       connected: true,
@@ -102,6 +122,7 @@ export function createBitmaskWallet(
       network: undefined,
     };
     options.onDisconnect?.();
+    requirePromptOnNextConnect = true;
   }
 
   return {

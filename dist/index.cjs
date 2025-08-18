@@ -111,7 +111,8 @@ var BitmaskConnect = class {
   async detect(timeoutMs = 800) {
     try {
       const res = await this.getPubKeyHash({ timeoutMs });
-      return Boolean(res.pubkeyHash);
+      const ph = res?.pubkeyHash;
+      return Boolean(ph && ph !== "0" && ph !== "-1");
     } catch {
       return false;
     }
