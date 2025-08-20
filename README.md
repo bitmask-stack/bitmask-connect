@@ -1,10 +1,11 @@
 # bitmask-connect
 
-A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask browser extension, a Bitcoin-only wallet supporting Layer 1, Lightning Network, and RGB smart contracts (UDAs).
+A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask browser extension, a Bitcoin-only wallet supporting Layer 1, Lightning Network, and RGB smart contracts. Facilitating wallet operations like authentication, asset management, and swaps for RGB20, RGB21, and BTC.
+*Running RGB 0.11.1*
 
 ## About
 
-`bitmask-connect` enables decentralized applications (dApps) to communicate with the BitMask browser extension via its content-script bridge. It provides a Promise-based API for wallet operations like authentication, asset management, UDA issuing, and swaps. Designed for simplicity, it supports TypeScript, handles extension quirks (e.g., dual `id`/`dateId`, ``transfer`` call), and includes a LaserEyes adapter for multi-wallet integration.
+`bitmask-connect` enables decentralized applications (dApps) to communicate with the BitMask browser extension. It provides a Promise-based API for wallet operations like authentication, asset management, UDA(RGB21) issuing, and swaps. Designed for simplicity, it supports TypeScript, handles extension quirks (e.g., dual `id`/`dateId`, ``transfer`` call), and includes a LaserEyes adapter for multi-wallet integration.
 
 - **Website**: [BitMask Wallet](https://bitmask.app) (assumed; update with official link)
 - **Topics**: bitcoin, wallet, sdk, browser-extension, typescript, rgb-protocol, lightning-network, dapp-integration
