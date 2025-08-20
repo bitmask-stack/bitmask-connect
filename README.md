@@ -20,6 +20,28 @@ A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask b
 - Compatibility with extension quirks (e.g., ``transfer``, dual `id`/`dateId`).
 - LaserEyes integration for multi-wallet dApp support.
 
+###🔑 API Overview
+| Method              | Description                                    |
+| ------------------- | ---------------------------------------------- |
+| `get_vault`         | Triggers auth/connect; returns `wallet_id`.    |
+| `get_pubkeyhash`    | Returns `{ pubkeyHash, network }`.             |
+| `get_address`       | Returns current address if logged in.          |
+| `is_funded`         | Checks funding status (requires `pubkeyHash`). |
+| `get_username`      | Resolves wallet username.                      |
+| `issue_uda`         | Issues a user-defined asset.                   |
+| `bulk_issue_uda`    | Issue multiple UDAs at once.                   |
+| `get_invoice`       | Returns invoice for a UDA.                     |
+| `swap_offer`        | Creates a swap offer.                          |
+| `cancel_swap_offer` | Cancels an active offer.                       |
+| `swap_bid`          | Places a bid (requires `bidData`, `contract`). |
+| `cancel_swap_bid`   | Cancels a bid.                                 |
+| `pass_asset`        | Adds an asset locally (expects UDA JSON).      |
+| `transfer`          | Transfers an asset (expects UDA JSON).         |
+| `get_assets`        | Fetches all wallet assets.                     |
+| `send_notification` | Fire-and-forget page notification.             |
+
+
+
 ### Installation
 
 ```bash
