@@ -1,15 +1,25 @@
-## bitmask-connect
+# bitmask-connect
 
-A tiny, typed web SDK that lets dApps talk to the Bitmask browser extension through its content-script bridge.
+A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask browser extension, a Bitcoin-only wallet supporting Layer 1, Lightning Network, and RGB smart contracts (UDAs).
 
-### What this gives you
+## About
 
-- **1:1 API** with the extension's `content-script.js` calls
-- **Promise-based** responses with per-call timeouts
-- **ID routing** that matches `returnid` in replies
-- **Compatibility** with current quirks (uses both `id` and `dateId`, and the odd `` `transfer` `` call name)
+`bitmask-connect` enables decentralized applications (dApps) to communicate with the BitMask browser extension via its content-script bridge. It provides a Promise-based API for wallet operations like authentication, asset management, UDA issuing, and swaps. Designed for simplicity, it supports TypeScript, handles extension quirks (e.g., dual `id`/`dateId`, ``transfer`` call), and includes a LaserEyes adapter for multi-wallet integration.
 
-### Install
+- **Website**: [BitMask Wallet](https://bitmask.app) (assumed; update with official link)
+- **Topics**: bitcoin, wallet, sdk, browser-extension, typescript, rgb-protocol, lightning-network, dapp-integration
+- **License**: MIT
+
+## Features
+
+- 1:1 API mapping to BitMask extension’s content-script calls.
+- Promise-based responses with configurable timeouts (default 30s).
+- ID routing via `returnid` for reliable request-response matching.
+- TypeScript support with optional `bitmask-core` type imports.
+- Compatibility with extension quirks (e.g., ``transfer``, dual `id`/`dateId`).
+- LaserEyes integration for multi-wallet dApp support.
+
+### Installation
 
 ```bash
 yarn add bitmask-connect
