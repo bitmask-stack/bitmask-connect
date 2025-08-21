@@ -1,6 +1,6 @@
 {
   "name": "bitmask-connect",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Bitmask web SDK to connect dApps with the Bitmask browser extension via content-script messaging.",
   "type": "module",
   "main": "dist/index.cjs",
