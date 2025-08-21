@@ -49,6 +49,8 @@ export type IssueUdaResponse = {
   errorMessage?: string;
 };
 
+export type IssueAssetResponse = IssueUdaResponse;
+
 export type BulkIssueUdaResponse = IssueUdaResponse;
 
 export type GetInvoiceResponse = {
@@ -144,6 +146,7 @@ const CALLS = {
   GetAddress: "get_address",
   SendNotification: "send_notification",
   GetAssets: "get_assets",
+  IssueAsset: "issue_asset",
 } as const;
 
 type PendingEntry = {
@@ -291,6 +294,21 @@ export class BitmaskConnect {
   }) {
     return this.send<BulkIssueUdaResponse>({
       call: CALLS.BulkIssueUDA,
+      ...params,
+    });
+  }
+
+  issueAsset(params: {
+    title?: string;
+    description?: string;
+    pubkeyHash?: string;
+    uid?: string;
+    // Accept either `uda` (mirroring issueUDA) or a generic `asset` payload
+    uda?: UDA & { bitcoinPrice?: number; option?: string | number };
+    asset?: unknown;
+  }) {
+    return this.send<IssueAssetResponse>({
+      call: CALLS.IssueAsset,
       ...params,
     });
   }

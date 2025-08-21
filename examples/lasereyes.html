@@ -96,6 +96,8 @@
         <button id="assetsBtn">getAssets</button>
         <button id="vaultBtn">getVault</button>
         <button id="usernameBtn">getUsername</button>
+        <button id="issueUdaBtn">issueUDA</button>
+        <button id="issueAssetBtn">issueAsset</button>
       </div>
       <pre id="out" class="mono"></pre>
     </div>
@@ -231,6 +233,34 @@
           log("getUsername", res);
         } catch (e) {
           log("getUsername", { error: String(e) });
+        }
+      };
+
+      document.getElementById("issueUdaBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const pub = await bm.getPubKeyHash();
+          const res = await bm.issueUDA({
+            pubkeyHash: pub.pubkeyHash || "",
+            uda: { name: "Example" },
+          });
+          log("issueUDA", res);
+        } catch (e) {
+          log("issueUDA", { error: String(e) });
+        }
+      };
+
+      document.getElementById("issueAssetBtn").onclick = async () => {
+        try {
+          const bm = new (await import("../dist/index.js")).BitmaskConnect();
+          const pub = await bm.getPubKeyHash();
+          const res = await bm.issueAsset({
+            pubkeyHash: pub.pubkeyHash || "",
+            uda: { name: "Example" },
+          });
+          log("issueAsset", res);
+        } catch (e) {
+          log("issueAsset", { error: String(e) });
         }
       };
     </script>

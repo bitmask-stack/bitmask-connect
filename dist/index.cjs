@@ -46,7 +46,8 @@ var CALLS = {
   IsFunded: "is_funded",
   GetAddress: "get_address",
   SendNotification: "send_notification",
-  GetAssets: "get_assets"
+  GetAssets: "get_assets",
+  IssueAsset: "issue_asset"
 };
 var BitmaskConnect = class {
   constructor(opts = {}) {
@@ -138,6 +139,12 @@ var BitmaskConnect = class {
   bulkIssueUDA(params) {
     return this.send({
       call: CALLS.BulkIssueUDA,
+      ...params
+    });
+  }
+  issueAsset(params) {
+    return this.send({
+      call: CALLS.IssueAsset,
       ...params
     });
   }

@@ -157,6 +157,7 @@
 
       <div class="controls" style="margin-top: 12px">
         <button id="issueBtn">issueUDA</button>
+        <button id="issueAssetBtn">issueAsset</button>
         <button id="bulkIssueBtn">bulkIssueUDA</button>
         <button id="invoiceBtn">getInvoice</button>
         <button id="swapOfferBtn">swapOffer</button>
@@ -266,6 +267,13 @@
         const uda = getJson("udaJson");
         const res = await bm.issueUDA({ pubkeyHash, uda });
         log("issueUDA", res);
+      };
+
+      document.getElementById("issueAssetBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const uda = getJson("udaJson");
+        const res = await bm.issueAsset({ pubkeyHash, uda });
+        log("issueAsset", res);
       };
 
       document.getElementById("bulkIssueBtn").onclick = async () => {

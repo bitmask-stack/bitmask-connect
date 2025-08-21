@@ -29,6 +29,7 @@ A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask b
 | `is_funded`         | Checks funding status (requires `pubkeyHash`). |
 | `get_username`      | Resolves wallet username.                      |
 | `issue_uda`         | Issues a user-defined asset.                   |
+| `issue_asset`       | Issues an asset (same response shape as UDA).  |
 | `bulk_issue_uda`    | Issue multiple UDAs at once.                   |
 | `get_invoice`       | Returns invoice for a UDA.                     |
 | `swap_offer`        | Creates a swap offer.                          |
@@ -98,6 +99,7 @@ bm.transfer({ pubkeyHash, udaData }) => Promise<{ txid: string, vout: number, co
 
 // UDA issuing
 bm.issueUDA({ uda, ... }) => Promise<{ txid: string, issueResponse?, swapResponse?, network?, errorTitle?, errorMessage?, returnid: string }>
+bm.issueAsset({ uda?, asset?, ... }) => Promise<{ txid: string, issueResponse?, swapResponse?, network?, errorTitle?, errorMessage?, returnid: string }>
 bm.bulkIssueUDA({ uda: UDA[], ... }) => Promise<same as issueUDA>
 
 // Swaps

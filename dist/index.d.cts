@@ -25,6 +25,7 @@ type IssueUdaResponse = {
     errorTitle?: string;
     errorMessage?: string;
 };
+type IssueAssetResponse = IssueUdaResponse;
 type BulkIssueUdaResponse = IssueUdaResponse;
 type GetInvoiceResponse = {
     returnid: string;
@@ -153,6 +154,17 @@ declare class BitmaskConnect {
             option?: string | number;
         }>;
     }): Promise<IssueUdaResponse>;
+    issueAsset(params: {
+        title?: string;
+        description?: string;
+        pubkeyHash?: string;
+        uid?: string;
+        uda?: UDA & {
+            bitcoinPrice?: number;
+            option?: string | number;
+        };
+        asset?: unknown;
+    }): Promise<IssueUdaResponse>;
     getInvoice(params: {
         title?: string;
         description?: string;
@@ -213,4 +225,4 @@ declare class BitmaskConnect {
     getAssets(): Promise<GetAssetsResponse>;
 }
 
-export { type AcceptAssetResponse, BitmaskConnect, type BitmaskConnectOptions, type BulkIssueUdaResponse, type CancelSwapBidResponse, type CancelSwapOfferResponse, type GetAddressResponse, type GetAssetsResponse, type GetInvoiceResponse, type GetPubKeyHashResponse, type GetUsernameResponse, type GetVaultResponse, type IsFundedResponse, type IssueUdaResponse, type Network, type PassAssetResponse, type RefreshEvent, type SwapBidResponse, type SwapOfferResponse, type TransferResponse, type UDA, BitmaskConnect as default };
+export { type AcceptAssetResponse, BitmaskConnect, type BitmaskConnectOptions, type BulkIssueUdaResponse, type CancelSwapBidResponse, type CancelSwapOfferResponse, type GetAddressResponse, type GetAssetsResponse, type GetInvoiceResponse, type GetPubKeyHashResponse, type GetUsernameResponse, type GetVaultResponse, type IsFundedResponse, type IssueAssetResponse, type IssueUdaResponse, type Network, type PassAssetResponse, type RefreshEvent, type SwapBidResponse, type SwapOfferResponse, type TransferResponse, type UDA, BitmaskConnect as default };
