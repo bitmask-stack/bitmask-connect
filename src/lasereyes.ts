@@ -16,6 +16,7 @@ export type BitmaskWalletAdapter = {
   connected: () => boolean;
   address: () => string | null;
   getState: () => BitmaskState;
+  bitmask: BitmaskConnect;
 };
 
 export type CreateBitmaskWalletOptions = {
@@ -134,6 +135,7 @@ export function createBitmaskWallet(
     connected: () => state.connected,
     address: () => state.address,
     getState: () => state,
+    bitmask: bm,
   };
 }
 
@@ -156,3 +158,7 @@ export function getBitmaskButton(
     onClick: () => adapter.connect().then(() => undefined),
   };
 }
+
+// Re-export BitmaskConnect for convenience
+export { BitmaskConnect } from "./index";
+export type { BitmaskConnectOptions } from "./index";

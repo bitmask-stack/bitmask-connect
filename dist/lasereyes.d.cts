@@ -1,3 +1,6 @@
+import BitmaskConnect from './index.cjs';
+export { BitmaskConnectOptions } from './index.cjs';
+
 type BitmaskState = {
     connected: boolean;
     address: string | null;
@@ -13,6 +16,7 @@ type BitmaskWalletAdapter = {
     connected: () => boolean;
     address: () => string | null;
     getState: () => BitmaskState;
+    bitmask: BitmaskConnect;
 };
 type CreateBitmaskWalletOptions = {
     timeoutMs?: number;
@@ -31,4 +35,4 @@ type BitmaskButton = {
 };
 declare function getBitmaskButton(adapter?: BitmaskWalletAdapter): BitmaskButton;
 
-export { BITMASK, type BitmaskButton, type BitmaskState, type BitmaskWalletAdapter, type CreateBitmaskWalletOptions, createBitmaskWallet, getBitmaskButton };
+export { BITMASK, type BitmaskButton, BitmaskConnect, type BitmaskState, type BitmaskWalletAdapter, type CreateBitmaskWalletOptions, createBitmaskWallet, getBitmaskButton };

@@ -223,9 +223,42 @@ Adapter API:
 
 The adapter exposes:
 
+**Basic LaserEyes wallet interface:**
+
 - `connect()` → resolves `{ connected, address, pubkeyHash, network }`
 - `disconnect()`
 - `connected()`, `address()`, `getState()`
+
+**Advanced Bitmask operations via `adapter.bitmask`:**
+Access all Bitmask operations through the `bitmask` property:
+
+```ts
+import { createBitmaskWallet } from "bitmask-connect/lasereyes";
+
+const adapter = createBitmaskWallet();
+await adapter.connect();
+
+// Basic operations (LaserEyes interface)
+const state = adapter.getState();
+const address = adapter.address();
+
+// Advanced operations (full Bitmask SDK)
+await adapter.bitmask.issueUDA({ pubkeyHash: state.pubkeyHash!, uda: {...} });
+await adapter.bitmask.sendSats({ pubkeyHash: state.pubkeyHash!, recipientAddress: "...", amount: 1000 });
+await adapter.bitmask.getAssets();
+await adapter.bitmask.swapOffer({ pubkeyHash: state.pubkeyHash!, offerData: {...} });
+// ... all other Bitmask methods available
+```
+
+All methods from `BitmaskConnect` are accessible via `adapter.bitmask.*`:
+
+- `getVault()`, `getUsername()`, `getUserData()`
+- `issueUDA()`, `issueAsset()`, `bulkIssueUDA()`
+- `getInvoice()`, `passAsset()`, `transfer()`
+- `sendSats()`, `mintPerSats()`
+- `swapOffer()`, `cancelSwapOffer()`, `swapBid()`, `cancelSwapBid()`
+- `getAssets()`, `isFunded()`, `getAddress()`, `getPubKeyHash()`
+- `sendNotification()`, `detect()`, `dispose()`, `on()`, `off()`
 
 ### License
 
