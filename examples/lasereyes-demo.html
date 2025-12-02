@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bitmask in LaserEyes Demo</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        margin: 24px;
+        background: #f9fafb;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin-top: 0;
+        color: #111827;
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 24px;
+        background: white;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .card h2 {
+        margin: 0 0 16px;
+        font-size: 18px;
+        color: #111827;
+      }
+      .wallets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .wallet-card {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+      }
+      .wallet-card:hover {
+        border-color: #6c5ce7;
+        background: #f9fafb;
+      }
+      .wallet-card.connected {
+        border-color: #10b981;
+        background: #f0fdf4;
+      }
+      .wallet-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 8px;
+        border-radius: 8px;
+      }
+      .wallet-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .wallet-status {
+        font-size: 12px;
+        color: #6b7280;
+      }
+      button {
+        padding: 10px 20px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      button:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+      }
+      button.primary {
+        background: #6c5ce7;
+        color: white;
+        border-color: #6c5ce7;
+      }
+      button.primary:hover {
+        background: #5a4fd9;
+      }
+      button.danger {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+      }
+      button.danger:hover {
+        background: #dc2626;
+      }
+      .status {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+      .status.connected {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+      }
+      .status.disconnected {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+      }
+      .info {
+        background: #eff6ff;
+        border: 1px solid #3b82f6;
+        color: #1e40af;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        border-radius: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .operations {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-left: 8px;
+      }
+      .badge.bitmask {
+        background: #ede9fe;
+        color: #6c5ce7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Bitmask in LaserEyes Demo</h1>
+      <p>
+        This demo shows Bitmask as a wallet adapter integrated with LaserEyes.
+        Click on a wallet to connect, or use Bitmask for advanced operations.
+      </p>
+
+      <div class="info">
+        <strong>Demo Mode:</strong> This simulates LaserEyes wallet selection.
+        Bitmask adapter is fully functional and can be used with actual
+        LaserEyes Provider.
+      </div>
+
+      <div class="card">
+        <h2>Available Wallets (LaserEyes Style)</h2>
+        <div class="wallets-grid" id="walletsGrid"></div>
+        <div id="status" class="status disconnected">
+          Not connected. Select a wallet above.
+        </div>
+        <div style="margin-top: 16px">
+          <button id="disconnectBtn" class="danger" style="display: none">
+            Disconnect
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          Connected Wallet Info
+          <span class="badge bitmask">Bitmask</span>
+        </h2>
+        <pre id="walletInfo" class="mono">{}</pre>
+      </div>
+
+      <div class="card">
+        <h2>Basic Operations (LaserEyes Interface)</h2>
+        <div class="operations">
+          <button id="getAddressBtn">Get Address</button>
+          <button id="getPubKeyBtn">Get PubKeyHash</button>
+          <button id="getAssetsBtn">Get Assets</button>
+          <button id="isFundedBtn">Is Funded</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          Advanced Bitmask Operations
+          <span class="badge bitmask">via adapter.bitmask</span>
+        </h2>
+        <div class="operations">
+          <button id="getVaultBtn">Get Vault</button>
+          <button id="getUsernameBtn">Get Username</button>
+          <button id="getUserDataBtn">Get User Data</button>
+          <button id="issueUdaBtn">Issue UDA</button>
+          <button id="sendSatsBtn">Send Sats</button>
+          <button id="swapOfferBtn">Swap Offer</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Operation Results</h2>
+        <pre id="output" class="mono">Click any operation button to see results...</pre>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        BITMASK,
+        createBitmaskWallet,
+      } from "../dist/lasereyes.js";
+
+      // Simulate LaserEyes wallet selection
+      const wallets = [
+        {
+          id: "BITMASK",
+          name: "Bitmask",
+          icon: BITMASK.icon,
+          adapter: BITMASK,
+        },
+        // In real LaserEyes, you'd have UNISAT, XVerse, etc.
+        // For demo, we only show Bitmask
+      ];
+
+      let currentWallet = null;
+      let currentAdapter = null;
+
+      const walletsGrid = document.getElementById("walletsGrid");
+      const statusEl = document.getElementById("status");
+      const disconnectBtn = document.getElementById("disconnectBtn");
+      const walletInfoEl = document.getElementById("walletInfo");
+      const outputEl = document.getElementById("output");
+
+      // Render wallet cards
+      wallets.forEach((wallet) => {
+        const card = document.createElement("div");
+        card.className = "wallet-card";
+        card.innerHTML = `
+          <img src="${wallet.icon}" class="wallet-icon" />
+          <div class="wallet-name">${wallet.name}</div>
+          <div class="wallet-status">Click to connect</div>
+        `;
+        card.onclick = () => connectWallet(wallet);
+        walletsGrid.appendChild(card);
+      });
+
+      function updateStatus() {
+        const connected = currentAdapter?.connected() || false;
+        const state = currentAdapter?.getState();
+
+        if (connected && state) {
+          statusEl.className = "status connected";
+          statusEl.textContent = `Connected to ${currentWallet.name} - Address: ${
+            state.address || "N/A"
+          }`;
+          disconnectBtn.style.display = "inline-block";
+          walletInfoEl.textContent = JSON.stringify(state, null, 2);
+
+          // Update wallet card
+          const cards = walletsGrid.querySelectorAll(".wallet-card");
+          cards.forEach((card, i) => {
+            if (wallets[i].id === currentWallet.id) {
+              card.className = "wallet-card connected";
+              card.querySelector(".wallet-status").textContent = "Connected";
+            } else {
+              card.className = "wallet-card";
+              card.querySelector(".wallet-status").textContent =
+                "Click to connect";
+            }
+          });
+        } else {
+          statusEl.className = "status disconnected";
+          statusEl.textContent = "Not connected. Select a wallet above.";
+          disconnectBtn.style.display = "none";
+          walletInfoEl.textContent = "{}";
+
+          // Reset wallet cards
+          const cards = walletsGrid.querySelectorAll(".wallet-card");
+          cards.forEach((card) => {
+            card.className = "wallet-card";
+            card.querySelector(".wallet-status").textContent =
+              "Click to connect";
+          });
+        }
+      }
+
+      async function connectWallet(wallet) {
+        try {
+          outputEl.textContent = `Connecting to ${wallet.name}...`;
+          currentWallet = wallet;
+          currentAdapter = wallet.adapter;
+
+          const state = await currentAdapter.connect();
+          log(`Connected to ${wallet.name}`, state);
+          updateStatus();
+        } catch (error) {
+          log(`Error connecting to ${wallet.name}`, {
+            error: error.message || String(error),
+          });
+          currentWallet = null;
+          currentAdapter = null;
+          updateStatus();
+        }
+      }
+
+      disconnectBtn.onclick = async () => {
+        if (currentAdapter) {
+          await currentAdapter.disconnect();
+          log("Disconnected", {});
+          currentWallet = null;
+          currentAdapter = null;
+          updateStatus();
+        }
+      };
+
+      function log(title, data) {
+        outputEl.textContent = `${title}:\n${JSON.stringify(data, null, 2)}`;
+      }
+
+      function ensureConnected() {
+        if (!currentAdapter || !currentAdapter.connected()) {
+          throw new Error("Please connect a wallet first");
+        }
+        return currentAdapter.getState().pubkeyHash;
+      }
+
+      // Basic operations (LaserEyes interface)
+      document.getElementById("getAddressBtn").onclick = async () => {
+        try {
+          if (!currentAdapter) throw new Error("No wallet connected");
+          const address = currentAdapter.address();
+          log("Get Address (LaserEyes interface)", { address });
+        } catch (e) {
+          log("Get Address Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("getPubKeyBtn").onclick = async () => {
+        try {
+          if (!currentAdapter) throw new Error("No wallet connected");
+          const state = currentAdapter.getState();
+          log("Get PubKeyHash (LaserEyes interface)", {
+            pubkeyHash: state.pubkeyHash,
+          });
+        } catch (e) {
+          log("Get PubKeyHash Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("getAssetsBtn").onclick = async () => {
+        try {
+          if (!currentAdapter) throw new Error("No wallet connected");
+          const res = await currentAdapter.bitmask.getAssets();
+          log("Get Assets (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Get Assets Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("isFundedBtn").onclick = async () => {
+        try {
+          const pubkeyHash = ensureConnected();
+          const res = await currentAdapter.bitmask.isFunded({ pubkeyHash });
+          log("Is Funded (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Is Funded Error", { error: String(e) });
+        }
+      };
+
+      // Advanced Bitmask operations
+      document.getElementById("getVaultBtn").onclick = async () => {
+        try {
+          const res = await currentAdapter.bitmask.getVault();
+          log("Get Vault (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Get Vault Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("getUsernameBtn").onclick = async () => {
+        try {
+          const pubkeyHash = ensureConnected();
+          const res = await currentAdapter.bitmask.getUsername({ pubkeyHash });
+          log("Get Username (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Get Username Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("getUserDataBtn").onclick = async () => {
+        try {
+          const pubkeyHash = ensureConnected();
+          const res = await currentAdapter.bitmask.getUserData({ pubkeyHash });
+          log("Get User Data (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Get User Data Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("issueUdaBtn").onclick = async () => {
+        try {
+          const pubkeyHash = ensureConnected();
+          const res = await currentAdapter.bitmask.issueUDA({
+            pubkeyHash,
+            uda: { name: "Demo UDA from LaserEyes" },
+          });
+          log("Issue UDA (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Issue UDA Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("sendSatsBtn").onclick = async () => {
+        try {
+          const pubkeyHash = ensureConnected();
+          const res = await currentAdapter.bitmask.sendSats({
+            pubkeyHash,
+            recipientAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+            amount: 1000,
+            feeRate: 1,
+          });
+          log("Send Sats (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Send Sats Error", { error: String(e) });
+        }
+      };
+
+      document.getElementById("swapOfferBtn").onclick = async () => {
+        try {
+          const pubkeyHash = ensureConnected();
+          const res = await currentAdapter.bitmask.swapOffer({
+            pubkeyHash,
+            offerData: { price: 1000 },
+          });
+          log("Swap Offer (via adapter.bitmask)", res);
+        } catch (e) {
+          log("Swap Offer Error", { error: String(e) });
+        }
+      };
+
+      // Initial state
+      updateStatus();
+    </script>
+  </body>
+</html>
+
+

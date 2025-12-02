@@ -16,6 +16,12 @@ type GetUsernameResponse = {
     txid: string;
     username?: string;
 };
+type GetUserDataResponse = {
+    returnid: string;
+    txid: string;
+    username?: string;
+    npub?: string;
+};
 type IssueUdaResponse = {
     returnid: string;
     txid: string;
@@ -25,6 +31,7 @@ type IssueUdaResponse = {
     errorTitle?: string;
     errorMessage?: string;
 };
+type IssueAssetResponse = IssueUdaResponse;
 type BulkIssueUdaResponse = IssueUdaResponse;
 type GetInvoiceResponse = {
     returnid: string;
@@ -103,6 +110,24 @@ type GetAddressResponse = {
     isLogged: true;
     address?: string;
 };
+type SendSatsResponse = {
+    returnid: string;
+    txid: string;
+    paymentResult?: unknown;
+    network?: Network;
+    errorTitle?: string;
+    errorMessage?: string;
+};
+type MintPerSatsResponse = {
+    returnid: string;
+    txid: string;
+    paymentResult?: unknown;
+    issueResponse?: unknown;
+    swapResponse?: unknown;
+    network?: Network;
+    errorTitle?: string;
+    errorMessage?: string;
+};
 type RefreshEvent = {
     refresh: true;
 };
@@ -133,6 +158,12 @@ declare class BitmaskConnect {
         pubkeyHash?: string;
         uid?: string;
     }): Promise<GetUsernameResponse>;
+    getUserData(params?: {
+        title?: string;
+        description?: string;
+        pubkeyHash?: string;
+        uid?: string;
+    }): Promise<GetUserDataResponse>;
     issueUDA(params: {
         title?: string;
         description?: string;
@@ -152,6 +183,17 @@ declare class BitmaskConnect {
             bitcoinPrice?: number;
             option?: string | number;
         }>;
+    }): Promise<IssueUdaResponse>;
+    issueAsset(params: {
+        title?: string;
+        description?: string;
+        pubkeyHash?: string;
+        uid?: string;
+        uda?: UDA & {
+            bitcoinPrice?: number;
+            option?: string | number;
+        };
+        asset?: unknown;
     }): Promise<IssueUdaResponse>;
     getInvoice(params: {
         title?: string;
@@ -210,7 +252,28 @@ declare class BitmaskConnect {
         message: string;
         title?: string;
     }): Promise<void>;
+    sendSats(params: {
+        title?: string;
+        description?: string;
+        pubkeyHash?: string;
+        uid?: string;
+        recipientAddress: string;
+        amount: number;
+        feeRate?: number;
+    }): Promise<SendSatsResponse>;
+    mintPerSats(params: {
+        title?: string;
+        description?: string;
+        pubkeyHash?: string;
+        uid?: string;
+        uda: UDA & {
+            bitcoinPrice?: number;
+            option?: string | number;
+        };
+        paymentAmount: number;
+        recipientAddress: string;
+    }): Promise<MintPerSatsResponse>;
     getAssets(): Promise<GetAssetsResponse>;
 }
 
-export { type AcceptAssetResponse, BitmaskConnect, type BitmaskConnectOptions, type BulkIssueUdaResponse, type CancelSwapBidResponse, type CancelSwapOfferResponse, type GetAddressResponse, type GetAssetsResponse, type GetInvoiceResponse, type GetPubKeyHashResponse, type GetUsernameResponse, type GetVaultResponse, type IsFundedResponse, type IssueUdaResponse, type Network, type PassAssetResponse, type RefreshEvent, type SwapBidResponse, type SwapOfferResponse, type TransferResponse, type UDA, BitmaskConnect as default };
+export { type AcceptAssetResponse, BitmaskConnect, type BitmaskConnectOptions, type BulkIssueUdaResponse, type CancelSwapBidResponse, type CancelSwapOfferResponse, type GetAddressResponse, type GetAssetsResponse, type GetInvoiceResponse, type GetPubKeyHashResponse, type GetUserDataResponse, type GetUsernameResponse, type GetVaultResponse, type IsFundedResponse, type IssueAssetResponse, type IssueUdaResponse, type MintPerSatsResponse, type Network, type PassAssetResponse, type RefreshEvent, type SendSatsResponse, type SwapBidResponse, type SwapOfferResponse, type TransferResponse, type UDA, BitmaskConnect as default };

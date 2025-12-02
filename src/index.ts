@@ -39,6 +39,13 @@ export type GetUsernameResponse = {
   username?: string;
 };
 
+export type GetUserDataResponse = {
+  returnid: string;
+  txid: string;
+  username?: string;
+  npub?: string;
+};
+
 export type IssueUdaResponse = {
   returnid: string;
   txid: string;
@@ -48,6 +55,8 @@ export type IssueUdaResponse = {
   errorTitle?: string;
   errorMessage?: string;
 };
+
+export type IssueAssetResponse = IssueUdaResponse;
 
 export type BulkIssueUdaResponse = IssueUdaResponse;
 
@@ -125,11 +134,32 @@ export type GetAddressResponse =
   | { returnid: string; isLogged: false }
   | { returnid: string; isLogged: true; address?: string };
 
+export type SendSatsResponse = {
+  returnid: string;
+  txid: string;
+  paymentResult?: unknown;
+  network?: Network;
+  errorTitle?: string;
+  errorMessage?: string;
+};
+
+export type MintPerSatsResponse = {
+  returnid: string;
+  txid: string;
+  paymentResult?: unknown;
+  issueResponse?: unknown;
+  swapResponse?: unknown;
+  network?: Network;
+  errorTitle?: string;
+  errorMessage?: string;
+};
+
 export type RefreshEvent = { refresh: true };
 
 const CALLS = {
   GetVault: "get_vault",
   GetUsername: "get_username",
+  GetUserData: "get_user_data",
   IssueUDA: "issue_uda",
   BulkIssueUDA: "bulk_issue_uda",
   SwapOffer: "swap_offer",
@@ -143,7 +173,10 @@ const CALLS = {
   IsFunded: "is_funded",
   GetAddress: "get_address",
   SendNotification: "send_notification",
+  SendSats: "send_sats",
+  MintPerSats: "mint_per_sats",
   GetAssets: "get_assets",
+  IssueAsset: "issue_asset",
 } as const;
 
 type PendingEntry = {
@@ -269,6 +302,20 @@ export class BitmaskConnect {
     });
   }
 
+  getUserData(
+    params: {
+      title?: string;
+      description?: string;
+      pubkeyHash?: string;
+      uid?: string;
+    } = {}
+  ) {
+    return this.send<GetUserDataResponse>({
+      call: CALLS.GetUserData,
+      ...params,
+    });
+  }
+
   issueUDA(params: {
     title?: string;
     description?: string;
@@ -291,6 +338,21 @@ export class BitmaskConnect {
   }) {
     return this.send<BulkIssueUdaResponse>({
       call: CALLS.BulkIssueUDA,
+      ...params,
+    });
+  }
+
+  issueAsset(params: {
+    title?: string;
+    description?: string;
+    pubkeyHash?: string;
+    uid?: string;
+    // Accept either `uda` (mirroring issueUDA) or a generic `asset` payload
+    uda?: UDA & { bitcoinPrice?: number; option?: string | number };
+    asset?: unknown;
+  }) {
+    return this.send<IssueAssetResponse>({
+      call: CALLS.IssueAsset,
       ...params,
     });
   }
@@ -404,6 +466,41 @@ export class BitmaskConnect {
       this.targetOrigin
     );
     return Promise.resolve();
+  }
+
+  sendSats(params: {
+    title?: string;
+    description?: string;
+    pubkeyHash?: string;
+    uid?: string;
+    recipientAddress: string;
+    amount: number;
+    feeRate?: number;
+  }) {
+    return this.send<SendSatsResponse>({
+      call: CALLS.SendSats,
+      ...params,
+      paymentData: {
+        recipientAddress: params.recipientAddress,
+        amount: params.amount,
+        feeRate: params.feeRate,
+      },
+    });
+  }
+
+  mintPerSats(params: {
+    title?: string;
+    description?: string;
+    pubkeyHash?: string;
+    uid?: string;
+    uda: UDA & { bitcoinPrice?: number; option?: string | number };
+    paymentAmount: number;
+    recipientAddress: string;
+  }) {
+    return this.send<MintPerSatsResponse>({
+      call: CALLS.MintPerSats,
+      ...params,
+    });
   }
 
   getAssets() {

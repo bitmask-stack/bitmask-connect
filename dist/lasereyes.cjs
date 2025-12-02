@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var lasereyes_exports = {};
 __export(lasereyes_exports, {
   BITMASK: () => BITMASK,
+  BitmaskConnect: () => BitmaskConnect,
   createBitmaskWallet: () => createBitmaskWallet,
   getBitmaskButton: () => getBitmaskButton
 });
@@ -35,6 +36,7 @@ function genId(prefix = "BC") {
 var CALLS = {
   GetVault: "get_vault",
   GetUsername: "get_username",
+  GetUserData: "get_user_data",
   IssueUDA: "issue_uda",
   BulkIssueUDA: "bulk_issue_uda",
   SwapOffer: "swap_offer",
@@ -49,7 +51,10 @@ var CALLS = {
   IsFunded: "is_funded",
   GetAddress: "get_address",
   SendNotification: "send_notification",
-  GetAssets: "get_assets"
+  SendSats: "send_sats",
+  MintPerSats: "mint_per_sats",
+  GetAssets: "get_assets",
+  IssueAsset: "issue_asset"
 };
 var BitmaskConnect = class {
   constructor(opts = {}) {
@@ -132,6 +137,12 @@ var BitmaskConnect = class {
       ...params
     });
   }
+  getUserData(params = {}) {
+    return this.send({
+      call: CALLS.GetUserData,
+      ...params
+    });
+  }
   issueUDA(params) {
     return this.send({
       call: CALLS.IssueUDA,
@@ -141,6 +152,12 @@ var BitmaskConnect = class {
   bulkIssueUDA(params) {
     return this.send({
       call: CALLS.BulkIssueUDA,
+      ...params
+    });
+  }
+  issueAsset(params) {
+    return this.send({
+      call: CALLS.IssueAsset,
       ...params
     });
   }
@@ -212,6 +229,23 @@ var BitmaskConnect = class {
       this.targetOrigin
     );
     return Promise.resolve();
+  }
+  sendSats(params) {
+    return this.send({
+      call: CALLS.SendSats,
+      ...params,
+      paymentData: {
+        recipientAddress: params.recipientAddress,
+        amount: params.amount,
+        feeRate: params.feeRate
+      }
+    });
+  }
+  mintPerSats(params) {
+    return this.send({
+      call: CALLS.MintPerSats,
+      ...params
+    });
   }
   getAssets() {
     return this.send({ call: CALLS.GetAssets });
@@ -310,7 +344,8 @@ function createBitmaskWallet(options = {}) {
     disconnect,
     connected: () => state.connected,
     address: () => state.address,
-    getState: () => state
+    getState: () => state,
+    bitmask: bm
   };
 }
 var BITMASK = createBitmaskWallet();
@@ -325,6 +360,7 @@ function getBitmaskButton(adapter = BITMASK) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   BITMASK,
+  BitmaskConnect,
   createBitmaskWallet,
   getBitmaskButton
 });

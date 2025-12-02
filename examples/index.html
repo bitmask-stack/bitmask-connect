@@ -85,6 +85,7 @@
           <button id="getPubBtn">Get PubKeyHash</button>
           <button id="getAddrBtn">Get Address</button>
           <button id="getUsernameBtn">Get Username</button>
+          <button id="getUserDataBtn">Get User Data</button>
           <button id="fundedBtn">Is Funded</button>
           <button id="assetsBtn">Get Assets</button>
           <button id="vaultBtn">Get Vault</button>
@@ -152,11 +153,29 @@
             rows="6"
             placeholder='{"name":"My Asset"}'
           ></textarea>
+          <div class="label">Payment Data JSON (sendSats)</div>
+          <textarea
+            id="paymentDataJson"
+            rows="4"
+            placeholder='{"recipientAddress":"bc1...","amount":1000,"feeRate":1}'
+          ></textarea>
+          <div class="label">Payment Amount (mintPerSats)</div>
+          <input
+            id="paymentAmountInput"
+            type="number"
+            placeholder="1000"
+          />
+          <div class="label">Recipient Address (mintPerSats)</div>
+          <input
+            id="recipientAddressInput"
+            placeholder="bc1..."
+          />
         </div>
       </div>
 
       <div class="controls" style="margin-top: 12px">
         <button id="issueBtn">issueUDA</button>
+        <button id="issueAssetBtn">issueAsset</button>
         <button id="bulkIssueBtn">bulkIssueUDA</button>
         <button id="invoiceBtn">getInvoice</button>
         <button id="swapOfferBtn">swapOffer</button>
@@ -165,6 +184,8 @@
         <button id="cancelSwapBidBtn">cancelSwapBid</button>
         <button id="passAssetBtn">passAsset</button>
         <button id="transferBtn">transfer</button>
+        <button id="sendSatsBtn">sendSats</button>
+        <button id="mintPerSatsBtn">mintPerSats</button>
       </div>
     </div>
 
@@ -232,6 +253,13 @@
         log("getUsername", res);
       };
 
+      document.getElementById("getUserDataBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const res = await bm.getUserData({ pubkeyHash });
+        setStatus({ pubkeyHash, ...res });
+        log("getUserData", res);
+      };
+
       document.getElementById("fundedBtn").onclick = async () => {
         const pubkeyHash = await ensurePubkey();
         const res = await bm.isFunded({ pubkeyHash });
@@ -266,6 +294,13 @@
         const uda = getJson("udaJson");
         const res = await bm.issueUDA({ pubkeyHash, uda });
         log("issueUDA", res);
+      };
+
+      document.getElementById("issueAssetBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const uda = getJson("udaJson");
+        const res = await bm.issueAsset({ pubkeyHash, uda });
+        log("issueAsset", res);
       };
 
       document.getElementById("bulkIssueBtn").onclick = async () => {
@@ -323,6 +358,40 @@
         const udaData = getJson("udaDataJson");
         const res = await bm.transfer({ pubkeyHash, udaData });
         log("transfer", res);
+      };
+
+      document.getElementById("sendSatsBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const paymentData = getJson("paymentDataJson");
+        if (!paymentData || !paymentData.recipientAddress || !paymentData.amount) {
+          alert("Please provide paymentData with recipientAddress and amount");
+          return;
+        }
+        const res = await bm.sendSats({
+          pubkeyHash,
+          recipientAddress: paymentData.recipientAddress,
+          amount: paymentData.amount,
+          feeRate: paymentData.feeRate,
+        });
+        log("sendSats", res);
+      };
+
+      document.getElementById("mintPerSatsBtn").onclick = async () => {
+        const pubkeyHash = await ensurePubkey();
+        const uda = getJson("udaJson");
+        const paymentAmount = parseFloat(document.getElementById("paymentAmountInput").value);
+        const recipientAddress = document.getElementById("recipientAddressInput").value.trim();
+        if (!uda || !paymentAmount || !recipientAddress) {
+          alert("Please provide uda JSON, paymentAmount, and recipientAddress");
+          return;
+        }
+        const res = await bm.mintPerSats({
+          pubkeyHash,
+          uda,
+          paymentAmount,
+          recipientAddress,
+        });
+        log("mintPerSats", res);
       };
     </script>
   </body>

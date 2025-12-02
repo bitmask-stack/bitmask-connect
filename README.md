@@ -1,11 +1,11 @@
 # bitmask-connect
 
 A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask browser extension, a Bitcoin-only wallet supporting Layer 1, Lightning Network, and RGB smart contracts. Facilitating wallet operations like authentication, asset management, and swaps for RGB20, RGB21, and BTC.
-*Running RGB 0.11.1*
+_Running RGB 0.11.1_
 
 ## About
 
-`bitmask-connect` enables decentralized applications (dApps) to communicate with the BitMask browser extension. It provides a Promise-based API for wallet operations like authentication, asset management, UDA(RGB21) issuing, and swaps. Designed for simplicity, it supports TypeScript, handles extension quirks (e.g., dual `id`/`dateId`, ``transfer`` call), and includes a LaserEyes adapter for multi-wallet integration.
+`bitmask-connect` enables decentralized applications (dApps) to communicate with the BitMask browser extension. It provides a Promise-based API for wallet operations like authentication, asset management, UDA(RGB21) issuing, and swaps. Designed for simplicity, it supports TypeScript, handles extension quirks (e.g., dual `id`/`dateId`, `transfer` call), and includes a LaserEyes adapter for multi-wallet integration.
 
 - **Website**: [BitMask Wallet](https://bitmask.app)
 - **Topics**: bitcoin, wallet, sdk, browser-extension, typescript, rgb-protocol, lightning-network, dapp-integration
@@ -17,30 +17,29 @@ A lightweight JavaScript/TypeScript SDK for integrating dApps with the BitMask b
 - Promise-based responses with configurable timeouts (default 30s).
 - ID routing via `returnid` for reliable request-response matching.
 - TypeScript support with optional `bitmask-core` type imports.
-- Compatibility with extension quirks (e.g., ``transfer``, dual `id`/`dateId`).
+- Compatibility with extension quirks (e.g., `transfer`, dual `id`/`dateId`).
 - LaserEyes integration for multi-wallet dApp support.
 
 ###🔑 API Overview
-| Method              | Description                                    |
+| Method | Description |
 | ------------------- | ---------------------------------------------- |
-| `get_vault`         | Triggers auth/connect; returns `wallet_id`.    |
-| `get_pubkeyhash`    | Returns `{ pubkeyHash, network }`.             |
-| `get_address`       | Returns current address if logged in.          |
-| `is_funded`         | Checks funding status (requires `pubkeyHash`). |
-| `get_username`      | Resolves wallet username.                      |
-| `issue_uda`         | Issues a user-defined asset.                   |
-| `bulk_issue_uda`    | Issue multiple UDAs at once.                   |
-| `get_invoice`       | Returns invoice for a UDA.                     |
-| `swap_offer`        | Creates a swap offer.                          |
-| `cancel_swap_offer` | Cancels an active offer.                       |
-| `swap_bid`          | Places a bid (requires `bidData`, `contract`). |
-| `cancel_swap_bid`   | Cancels a bid.                                 |
-| `pass_asset`        | Adds an asset locally (expects UDA JSON).      |
-| `transfer`          | Transfers an asset (expects UDA JSON).         |
-| `get_assets`        | Fetches all wallet assets.                     |
-| `send_notification` | Fire-and-forget page notification.             |
-
-
+| `get_vault` | Triggers auth/connect; returns `wallet_id`. |
+| `get_pubkeyhash` | Returns `{ pubkeyHash, network }`. |
+| `get_address` | Returns current address if logged in. |
+| `is_funded` | Checks funding status (requires `pubkeyHash`). |
+| `get_username` | Resolves wallet username. |
+| `issue_uda` | Issues a user-defined asset. |
+| `issue_asset` | Issues an asset (same response shape as UDA). |
+| `bulk_issue_uda` | Issue multiple UDAs at once. |
+| `get_invoice` | Returns invoice for a UDA. |
+| `swap_offer` | Creates a swap offer. |
+| `cancel_swap_offer` | Cancels an active offer. |
+| `swap_bid` | Places a bid (requires `bidData`, `contract`). |
+| `cancel_swap_bid` | Cancels a bid. |
+| `pass_asset` | Adds an asset locally (expects UDA JSON). |
+| `transfer` | Transfers an asset (expects UDA JSON). |
+| `get_assets` | Fetches all wallet assets. |
+| `send_notification` | Fire-and-forget page notification. |
 
 ### Installation
 
@@ -98,6 +97,7 @@ bm.transfer({ pubkeyHash, udaData }) => Promise<{ txid: string, vout: number, co
 
 // UDA issuing
 bm.issueUDA({ uda, ... }) => Promise<{ txid: string, issueResponse?, swapResponse?, network?, errorTitle?, errorMessage?, returnid: string }>
+bm.issueAsset({ uda?, asset?, ... }) => Promise<{ txid: string, issueResponse?, swapResponse?, network?, errorTitle?, errorMessage?, returnid: string }>
 bm.bulkIssueUDA({ uda: UDA[], ... }) => Promise<same as issueUDA>
 
 // Swaps
@@ -223,9 +223,42 @@ Adapter API:
 
 The adapter exposes:
 
+**Basic LaserEyes wallet interface:**
+
 - `connect()` → resolves `{ connected, address, pubkeyHash, network }`
 - `disconnect()`
 - `connected()`, `address()`, `getState()`
+
+**Advanced Bitmask operations via `adapter.bitmask`:**
+Access all Bitmask operations through the `bitmask` property:
+
+```ts
+import { createBitmaskWallet } from "bitmask-connect/lasereyes";
+
+const adapter = createBitmaskWallet();
+await adapter.connect();
+
+// Basic operations (LaserEyes interface)
+const state = adapter.getState();
+const address = adapter.address();
+
+// Advanced operations (full Bitmask SDK)
+await adapter.bitmask.issueUDA({ pubkeyHash: state.pubkeyHash!, uda: {...} });
+await adapter.bitmask.sendSats({ pubkeyHash: state.pubkeyHash!, recipientAddress: "...", amount: 1000 });
+await adapter.bitmask.getAssets();
+await adapter.bitmask.swapOffer({ pubkeyHash: state.pubkeyHash!, offerData: {...} });
+// ... all other Bitmask methods available
+```
+
+All methods from `BitmaskConnect` are accessible via `adapter.bitmask.*`:
+
+- `getVault()`, `getUsername()`, `getUserData()`
+- `issueUDA()`, `issueAsset()`, `bulkIssueUDA()`
+- `getInvoice()`, `passAsset()`, `transfer()`
+- `sendSats()`, `mintPerSats()`
+- `swapOffer()`, `cancelSwapOffer()`, `swapBid()`, `cancelSwapBid()`
+- `getAssets()`, `isFunded()`, `getAddress()`, `getPubKeyHash()`
+- `sendNotification()`, `detect()`, `dispose()`, `on()`, `off()`
 
 ### License
 

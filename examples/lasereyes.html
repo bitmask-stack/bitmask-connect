@@ -87,15 +87,32 @@
     </div>
 
     <div class="card" style="margin-top: 16px">
-      <h2>Calls (via adapter + core)</h2>
+      <h2>Basic Wallet Operations (LaserEyes Interface)</h2>
       <div class="controls" style="margin-top: 12px">
         <button id="detectBtn">Detect</button>
         <button id="pubBtn">getPubKeyHash</button>
         <button id="addrBtn">getAddress</button>
         <button id="fundedBtn">isFunded</button>
         <button id="assetsBtn">getAssets</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h2>Advanced Bitmask Operations (via adapter.bitmask)</h2>
+      <div class="controls" style="margin-top: 12px">
         <button id="vaultBtn">getVault</button>
         <button id="usernameBtn">getUsername</button>
+        <button id="userDataBtn">getUserData</button>
+        <button id="issueUdaBtn">issueUDA</button>
+        <button id="issueAssetBtn">issueAsset</button>
+        <button id="bulkIssueBtn">bulkIssueUDA</button>
+        <button id="invoiceBtn">getInvoice</button>
+        <button id="sendSatsBtn">sendSats</button>
+        <button id="mintPerSatsBtn">mintPerSats</button>
+        <button id="swapOfferBtn">swapOffer</button>
+        <button id="swapBidBtn">swapBid</button>
+        <button id="passAssetBtn">passAsset</button>
+        <button id="transferBtn">transfer</button>
       </div>
       <pre id="out" class="mono"></pre>
     </div>
@@ -160,6 +177,19 @@
         outEl.textContent = `${title}:\n` + JSON.stringify(data, null, 2);
       }
 
+      // Helper to ensure wallet is connected and get pubkeyHash
+      async function ensureConnected() {
+        if (!wallet.connected()) {
+          await wallet.connect();
+        }
+        const state = wallet.getState();
+        if (!state.pubkeyHash) {
+          throw new Error("Wallet not connected or no pubkeyHash");
+        }
+        return state.pubkeyHash;
+      }
+
+      // Basic wallet operations (LaserEyes interface)
       document.getElementById("detectBtn").onclick = async () => {
         const bmState = await wallet.connect().catch(() => wallet.getState());
         log("detect/connect", bmState);
@@ -167,13 +197,8 @@
 
       document.getElementById("pubBtn").onclick = async () => {
         try {
-          const bm = (await import("../dist/index.js")).BitmaskConnect
-            ? new (await import("../dist/index.js")).BitmaskConnect()
-            : null;
-          const res = bm
-            ? await bm.getPubKeyHash()
-            : { error: "core not available" };
-          log("getPubKeyHash", res);
+          const res = await wallet.bitmask.getPubKeyHash();
+          log("getPubKeyHash (via adapter.bitmask)", res);
         } catch (e) {
           log("getPubKeyHash", { error: String(e) });
         }
@@ -181,10 +206,9 @@
 
       document.getElementById("addrBtn").onclick = async () => {
         try {
-          const bm = new (await import("../dist/index.js")).BitmaskConnect();
-          const pub = await bm.getPubKeyHash();
-          const res = await bm.getAddress({ pubkeyHash: pub.pubkeyHash || "" });
-          log("getAddress", res);
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.getAddress({ pubkeyHash });
+          log("getAddress (via adapter.bitmask)", res);
         } catch (e) {
           log("getAddress", { error: String(e) });
         }
@@ -192,10 +216,9 @@
 
       document.getElementById("fundedBtn").onclick = async () => {
         try {
-          const bm = new (await import("../dist/index.js")).BitmaskConnect();
-          const pub = await bm.getPubKeyHash();
-          const res = await bm.isFunded({ pubkeyHash: pub.pubkeyHash || "" });
-          log("isFunded", res);
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.isFunded({ pubkeyHash });
+          log("isFunded (via adapter.bitmask)", res);
         } catch (e) {
           log("isFunded", { error: String(e) });
         }
@@ -203,19 +226,18 @@
 
       document.getElementById("assetsBtn").onclick = async () => {
         try {
-          const bm = new (await import("../dist/index.js")).BitmaskConnect();
-          const res = await bm.getAssets();
-          log("getAssets", res);
+          const res = await wallet.bitmask.getAssets();
+          log("getAssets (via adapter.bitmask)", res);
         } catch (e) {
           log("getAssets", { error: String(e) });
         }
       };
 
+      // Advanced Bitmask operations (via adapter.bitmask)
       document.getElementById("vaultBtn").onclick = async () => {
         try {
-          const bm = new (await import("../dist/index.js")).BitmaskConnect();
-          const res = await bm.getVault();
-          log("getVault", res);
+          const res = await wallet.bitmask.getVault();
+          log("getVault (via adapter.bitmask)", res);
         } catch (e) {
           log("getVault", { error: String(e) });
         }
@@ -223,14 +245,156 @@
 
       document.getElementById("usernameBtn").onclick = async () => {
         try {
-          const bm = new (await import("../dist/index.js")).BitmaskConnect();
-          const pub = await bm.getPubKeyHash();
-          const res = await bm.getUsername({
-            pubkeyHash: pub.pubkeyHash || "",
-          });
-          log("getUsername", res);
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.getUsername({ pubkeyHash });
+          log("getUsername (via adapter.bitmask)", res);
         } catch (e) {
           log("getUsername", { error: String(e) });
+        }
+      };
+
+      document.getElementById("userDataBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.getUserData({ pubkeyHash });
+          log("getUserData (via adapter.bitmask)", res);
+        } catch (e) {
+          log("getUserData", { error: String(e) });
+        }
+      };
+
+      document.getElementById("issueUdaBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.issueUDA({
+            pubkeyHash,
+            uda: { name: "Example UDA" },
+          });
+          log("issueUDA (via adapter.bitmask)", res);
+        } catch (e) {
+          log("issueUDA", { error: String(e) });
+        }
+      };
+
+      document.getElementById("issueAssetBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.issueAsset({
+            pubkeyHash,
+            uda: { name: "Example Asset" },
+          });
+          log("issueAsset (via adapter.bitmask)", res);
+        } catch (e) {
+          log("issueAsset", { error: String(e) });
+        }
+      };
+
+      document.getElementById("bulkIssueBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.bulkIssueUDA({
+            pubkeyHash,
+            uda: [{ name: "Bulk UDA 1" }, { name: "Bulk UDA 2" }],
+          });
+          log("bulkIssueUDA (via adapter.bitmask)", res);
+        } catch (e) {
+          log("bulkIssueUDA", { error: String(e) });
+        }
+      };
+
+      document.getElementById("invoiceBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.getInvoice({
+            pubkeyHash,
+            uda: { name: "Example" },
+          });
+          log("getInvoice (via adapter.bitmask)", res);
+        } catch (e) {
+          log("getInvoice", { error: String(e) });
+        }
+      };
+
+      document.getElementById("sendSatsBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.sendSats({
+            pubkeyHash,
+            recipientAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+            amount: 1000,
+            feeRate: 1,
+          });
+          log("sendSats (via adapter.bitmask)", res);
+        } catch (e) {
+          log("sendSats", { error: String(e) });
+        }
+      };
+
+      document.getElementById("mintPerSatsBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.mintPerSats({
+            pubkeyHash,
+            uda: { name: "Example Mint" },
+            paymentAmount: 1000,
+            recipientAddress: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+          });
+          log("mintPerSats (via adapter.bitmask)", res);
+        } catch (e) {
+          log("mintPerSats", { error: String(e) });
+        }
+      };
+
+      document.getElementById("swapOfferBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.swapOffer({
+            pubkeyHash,
+            offerData: { price: 1000 },
+          });
+          log("swapOffer (via adapter.bitmask)", res);
+        } catch (e) {
+          log("swapOffer", { error: String(e) });
+        }
+      };
+
+      document.getElementById("swapBidBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.swapBid({
+            pubkeyHash,
+            bidData: { bid: 1000 },
+            contract: { terms: "example" },
+          });
+          log("swapBid (via adapter.bitmask)", res);
+        } catch (e) {
+          log("swapBid", { error: String(e) });
+        }
+      };
+
+      document.getElementById("passAssetBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.passAsset({
+            pubkeyHash,
+            udaData: { name: "Passed Asset" },
+          });
+          log("passAsset (via adapter.bitmask)", res);
+        } catch (e) {
+          log("passAsset", { error: String(e) });
+        }
+      };
+
+      document.getElementById("transferBtn").onclick = async () => {
+        try {
+          const pubkeyHash = await ensureConnected();
+          const res = await wallet.bitmask.transfer({
+            pubkeyHash,
+            udaData: { name: "Transferred Asset" },
+          });
+          log("transfer (via adapter.bitmask)", res);
+        } catch (e) {
+          log("transfer", { error: String(e) });
         }
       };
     </script>
