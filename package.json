@@ -29,7 +29,7 @@
     "typescript": "^5.5.0"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/lasereyes.ts --dts --format cjs,esm --clean",
+    "build": "tsup src/index.ts src/lasereyes.ts --dts --format cjs,esm --clean && node scripts/prepare-dist.cjs",
     "dev": "tsup src/index.ts src/lasereyes.ts --dts --format cjs,esm --watch",
     "prod": "yarn build && yarn typecheck",
     "typecheck": "tsc --noEmit"

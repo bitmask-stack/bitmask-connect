@@ -1,0 +1,27 @@
+{
+  "name": "bitmask-connect",
+  "version": "1.0.0",
+  "description": "Bitmask web SDK to connect dApps with the Bitmask browser extension via content-script messaging.",
+  "type": "module",
+  "main": "index.cjs",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs",
+      "types": "./index.d.ts"
+    },
+    "./lasereyes": {
+      "import": "./lasereyes.js",
+      "require": "./lasereyes.cjs",
+      "types": "./lasereyes.d.ts"
+    }
+  },
+  "repository": "https://github.com/bitmask-stack/bitmask-connect.git",
+  "author": "Jose Robles <jd.robles@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bitmask-core": "1.0.0-beta.9"
+  }
+}
